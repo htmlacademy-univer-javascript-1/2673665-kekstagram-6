@@ -61,7 +61,7 @@ const createComment = () => {
   };
 };
 
-// Функция для создания объекта фотографии
+// функция для  объекта фотографии
 const createPhoto = (id) => {
   const commentsCount = getRandomInteger(0, 30);
   const comments = [];
@@ -80,7 +80,7 @@ const createPhoto = (id) => {
   };
 };
 
-// Создание массива из 25 фотографий
+// Создание 25 фотографий
 const generatePhotos = () => {
   const photos = [];
   for (let i = 1; i <= 25; i++) {
@@ -89,5 +89,5 @@ const generatePhotos = () => {
   return photos;
 };
 
-// Генерация массива фотографий
+
 const photos = generatePhotos();
