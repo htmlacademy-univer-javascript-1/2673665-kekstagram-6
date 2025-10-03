@@ -91,5 +91,3 @@ const generatePhotos = () => {
 
 // Генерация массива фотографий
 const photos = generatePhotos();
-
-console.log(photos);
