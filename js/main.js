@@ -1,7 +1,7 @@
 
 import { generatePhotos } from './photos.js';
 
-import { renderThumbnail } from './thumbnail.js';
+import { renderThumbnail } from './thumbnails.js';
 
 const userPhotos = generatePhotos();
 
