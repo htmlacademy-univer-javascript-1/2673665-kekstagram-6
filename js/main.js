@@ -1,6 +1,12 @@
 
 import { generatePhotos } from './photos.js';
 
-const photos = generatePhotos();
+import { renderThumbnail } from './thumbnail.js';
 
-console.log(photos);
+const userPhotos = generatePhotos();
+
+const picturesContainer = document.querySelector('.pictures');
+
+renderThumbnail(userPhotos, picturesContainer);
+
+export { userPhotos };
