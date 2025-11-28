@@ -19,13 +19,22 @@ const closeButton = bigPicture.querySelector('.big-picture__cancel');
 
 // функция для создания элемента комментария
 const createCommentElement = (comment) => {
-  const commentElement = document.createElement('li'); // элемент <li> для комментария
+  const commentElement = document.createElement('li');
   commentElement.classList.add('social__comment');
 
-  commentElement.innerHTML = `
-    <img class="social__picture" src="img/avatar-${Math.floor(Math.random() * 6) + 1}.svg" alt="${comment.name}" width="35" height="35">
-    <p class="social__text">${comment.message}</p>
-  `;
+  const img = document.createElement('img');
+  img.classList.add('social__picture');
+  img.src = `img/avatar-${Math.floor(Math.random() * 6) + 1}.svg`;
+  img.alt = comment.name;
+  img.width = 35;
+  img.height = 35;
+
+  const text = document.createElement('p');
+  text.classList.add('social__text');
+  text.textContent = comment.message;
+
+  commentElement.appendChild(img);
+  commentElement.appendChild(text);
 
   return commentElement;
 };
