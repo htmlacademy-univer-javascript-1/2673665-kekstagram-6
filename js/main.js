@@ -1,6 +1,7 @@
 
 import { generatePhotos } from './photos.js';
 import { renderThumbnail } from './thumbnails.js';
+import { openFullPhoto } from './full-photo.js';
 
 const userPhotos = generatePhotos();
 const picturesContainer = document.querySelector('.pictures');
