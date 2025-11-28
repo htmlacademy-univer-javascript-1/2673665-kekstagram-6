@@ -1,5 +1,5 @@
 
-import { getRandomInteger } from './util.js';
+import { getRandomInteger } from './utils.js';
 import { MESSAGES, NAMES } from './data.js';
 
 
