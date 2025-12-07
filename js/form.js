@@ -1,35 +1,3 @@
-//import Pristine from 'node_modules/pristinejs/dist/pristine.min.js';
-
-const uploadForm = document.querySelector('#upload-select-image');
-const uploadInput = document.querySelector('#upload-file');
-const uploadOverlay = document.querySelector('.img-upload__overlay');
-const uploadCancel = document.querySelector('#upload-cancel');
-const hashtagInput = document.querySelector('.text__hashtags');
-const commentInput = document.querySelector('.text__description');
-
-const showUploadForm = () => {
-  uploadOverlay.classList.remove('hidden');
-  document.body.classList.add('modal-open');
-};
-
-const closeUploadForm = () => {
-  uploadOverlay.classList.add('hidden');
-  document.body.classList.remove('modal-open');
-  uploadForm.reset();
-};
-
-uploadInput.addEventListener('change', showUploadForm);
-uploadCancel.addEventListener('click', closeUploadForm);
-
-document.addEventListener('keydown', (evt) => {
-  if (evt.key === 'Escape' && !uploadOverlay.classList.contains('hidden')) {
-    if (document.activeElement === hashtagInput || document.activeElement === commentInput) {
-      return;
-    }
-    closeUploadForm();
-  }
-});
-
 const validateHashtags = (value) => {
   if (value.trim() === '') {
     return true;
@@ -101,49 +69,84 @@ const validateComment = (value) => {
   return value.length <= 140;
 };
 
-const pristine = new Pristine(uploadForm, {
-  classTo: 'img-upload__field-wrapper',
-  errorClass: 'img-upload__field-wrapper--invalid',
-  successClass: 'img-upload__field-wrapper--valid',
-  errorTextParent: 'img-upload__field-wrapper',
-  errorTextTag: 'div',
-  errorTextClass: 'img-upload__error'
-});
-
-pristine.addValidator(
-  hashtagInput,
-  validateHashtags,
-  getHashtagErrorMessage
-);
-
-pristine.addValidator(
-  commentInput,
-  validateComment,
-  'Комментарий не должен превышать 140 символов'
-);
-
-uploadForm.addEventListener('submit', (evt) => {
-  evt.preventDefault();
-
-  const isValid = pristine.validate();
-
-  if (isValid) {
-    console.log('Форма валидна, можно отправлять');
-  }
-});
-
-hashtagInput.addEventListener('keydown', (evt) => {
-  if (evt.key === 'Escape') {
-    evt.stopPropagation();
-  }
-});
-
-commentInput.addEventListener('keydown', (evt) => {
-  if (evt.key === 'Escape') {
-    evt.stopPropagation();
-  }
-});
-
 export const initForm = () => {
-  console.log('Form module initialized');
+  const uploadForm = document.querySelector('#upload-select-image');
+  const uploadInput = document.querySelector('#upload-file');
+  const uploadOverlay = document.querySelector('.img-upload__overlay');
+  const uploadCancel = document.querySelector('#upload-cancel');
+  const hashtagInput = document.querySelector('.text__hashtags');
+  const commentInput = document.querySelector('.text__description');
+
+  if (!uploadForm || !uploadInput || !uploadOverlay || !uploadCancel || !hashtagInput || !commentInput) {
+    return;
+  }
+
+  const pristine = new Pristine(uploadForm, {
+    classTo: 'img-upload__field-wrapper',
+    errorClass: 'img-upload__field-wrapper--invalid',
+    successClass: 'img-upload__field-wrapper--valid',
+    errorTextParent: 'img-upload__field-wrapper',
+    errorTextTag: 'div',
+    errorTextClass: 'img-upload__error'
+  });
+
+  const showUploadForm = () => {
+    uploadOverlay.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+  };
+
+  const closeUploadForm = () => {
+    uploadOverlay.classList.add('hidden');
+    document.body.classList.remove('modal-open');
+    uploadForm.reset();
+    uploadInput.value = '';
+    pristine.reset();
+  };
+
+  uploadInput.addEventListener('change', showUploadForm);
+  uploadCancel.addEventListener('click', closeUploadForm);
+
+  document.addEventListener('keydown', (evt) => {
+    if (evt.key === 'Escape' && !uploadOverlay.classList.contains('hidden')) {
+      if (document.activeElement === hashtagInput || document.activeElement === commentInput) {
+        return;
+      }
+      closeUploadForm();
+    }
+  });
+
+  pristine.addValidator(
+    hashtagInput,
+    validateHashtags,
+    getHashtagErrorMessage
+  );
+
+  pristine.addValidator(
+    commentInput,
+    validateComment,
+    'Комментарий не должен превышать 140 символов'
+  );
+
+  uploadForm.addEventListener('submit', (evt) => {
+    evt.preventDefault();
+
+    const isValid = pristine.validate();
+
+    if (isValid) {
+      // Здесь будет AJAX-запрос в следующем задании
+    }
+  });
+
+  hashtagInput.addEventListener('keydown', (evt) => {
+    if (evt.key === 'Escape') {
+      evt.stopPropagation();
+    }
+  });
+
+  commentInput.addEventListener('keydown', (evt) => {
+    if (evt.key === 'Escape') {
+      evt.stopPropagation();
+    }
+  });
 };
+
