@@ -1,3 +1,45 @@
+import { sendData } from './api.js';
+
+const SubmitButtonText = {
+  IDLE: 'Опубликовать',
+  SENDING: 'Публикую...'
+};
+
+const showMessage = (templateId, onCloseCallback) => {
+  const template = document.querySelector(`#${templateId}`);
+  if (!template) {
+    return;
+  }
+
+  const message = template.content.querySelector(`.${templateId}`).cloneNode(true);
+  const closeMessage = () => {
+    message.remove();
+    document.removeEventListener('keydown', onDocumentKeydown);
+    document.removeEventListener('click', onDocumentClick);
+    if (onCloseCallback) {
+      onCloseCallback();
+    }
+  };
+
+  const onCloseButtonClick = () => closeMessage();
+  const onDocumentKeydown = (evt) => {
+    if (evt.key === 'Escape') {
+      closeMessage();
+    }
+  };
+  const onDocumentClick = (evt) => {
+    if (!message.contains(evt.target)) {
+      closeMessage();
+    }
+  };
+
+  message.querySelector(`.${templateId}__button`).addEventListener('click', onCloseButtonClick);
+  document.addEventListener('keydown', onDocumentKeydown);
+  document.addEventListener('click', onDocumentClick);
+
+  document.body.appendChild(message);
+};
+
 const validateHashtags = (value) => {
   if (value.trim() === '') {
     return true;
@@ -76,8 +118,9 @@ export const initForm = () => {
   const uploadCancel = document.querySelector('#upload-cancel');
   const hashtagInput = document.querySelector('.text__hashtags');
   const commentInput = document.querySelector('.text__description');
+  const submitButton = uploadForm?.querySelector('.img-upload__submit');
 
-  if (!uploadForm || !uploadInput || !uploadOverlay || !uploadCancel || !hashtagInput || !commentInput) {
+  if (!uploadForm || !uploadInput || !uploadOverlay || !uploadCancel || !hashtagInput || !commentInput || !submitButton) {
     return;
   }
 
@@ -101,6 +144,9 @@ export const initForm = () => {
     uploadForm.reset();
     uploadInput.value = '';
     pristine.reset();
+
+    // Сбрасываем масштаб и эффекты через событие reset
+    uploadForm.dispatchEvent(new Event('reset'));
   };
 
   uploadInput.addEventListener('change', showUploadForm);
@@ -127,13 +173,30 @@ export const initForm = () => {
     'Комментарий не должен превышать 140 символов'
   );
 
-  uploadForm.addEventListener('submit', (evt) => {
+  uploadForm.addEventListener('submit', async (evt) => {
     evt.preventDefault();
 
     const isValid = pristine.validate();
 
-    if (isValid) {
-      // Здесь будет AJAX-запрос в следующем задании
+    if (!isValid) {
+      return;
+    }
+
+    const originalText = submitButton.textContent;
+    submitButton.textContent = SubmitButtonText.SENDING;
+    submitButton.disabled = true;
+
+    try {
+      const formData = new FormData(evt.target);
+      await sendData(formData);
+
+      closeUploadForm();
+      showMessage('success');
+    } catch {
+      showMessage('error');
+    } finally {
+      submitButton.textContent = originalText;
+      submitButton.disabled = false;
     }
   });
 
@@ -149,4 +212,3 @@ export const initForm = () => {
     }
   });
 };
-
