@@ -1,3 +1,4 @@
+'use strict';
 import { sendData } from './api.js';
 
 const SubmitButtonText = {
@@ -118,11 +119,30 @@ export const initForm = () => {
   const uploadCancel = document.querySelector('#upload-cancel');
   const hashtagInput = document.querySelector('.text__hashtags');
   const commentInput = document.querySelector('.text__description');
-  const submitButton = uploadForm?.querySelector('.img-upload__submit');
+  const submitButton = uploadForm.querySelector('.img-upload__submit');
+  const previewImage = document.querySelector('.img-upload__preview img');
 
-  if (!uploadForm || !uploadInput || !uploadOverlay || !uploadCancel || !hashtagInput || !commentInput || !submitButton) {
+  if (!uploadForm || !uploadInput || !uploadOverlay || !uploadCancel || !hashtagInput || !commentInput || !submitButton || !previewImage) {
     return;
   }
+
+  const showUploadedImage = () => {
+    const file = uploadInput.files[0];
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = function (event) {
+        previewImage.src = event.target.result;
+
+        const effectPreviews = document.querySelectorAll('.effects__preview');
+        effectPreviews.forEach((preview) => {
+          preview.style.backgroundImage = `url(${event.target.result})`;
+        });
+      };
+
+      reader.readAsDataURL(file);
+    }
+  };
 
   const pristine = new Pristine(uploadForm, {
     classTo: 'img-upload__field-wrapper',
@@ -136,6 +156,7 @@ export const initForm = () => {
   const showUploadForm = () => {
     uploadOverlay.classList.remove('hidden');
     document.body.classList.add('modal-open');
+    showUploadedImage();
   };
 
   const closeUploadForm = () => {
@@ -145,7 +166,13 @@ export const initForm = () => {
     uploadInput.value = '';
     pristine.reset();
 
-    // Сбрасываем масштаб и эффекты через событие reset
+    previewImage.src = 'img/upload-default-image.jpg';
+
+    const effectPreviews = document.querySelectorAll('.effects__preview');
+    effectPreviews.forEach((preview) => {
+      preview.style.backgroundImage = '';
+    });
+
     uploadForm.dispatchEvent(new Event('reset'));
   };
 
@@ -187,7 +214,7 @@ export const initForm = () => {
     submitButton.disabled = true;
 
     try {
-      const formData = new FormData(evt.target);
+      const formData = new FormData(uploadForm);
       await sendData(formData);
 
       closeUploadForm();

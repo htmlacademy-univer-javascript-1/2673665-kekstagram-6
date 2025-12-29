@@ -1,3 +1,4 @@
+'use strict';
 function checkLen(stringForCheck, maxLength) {
   return (stringForCheck.length <= maxLength);
 }
