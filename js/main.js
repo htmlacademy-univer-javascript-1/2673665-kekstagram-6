@@ -1,3 +1,4 @@
+'use strict';
 import { getData } from './api.js';
 import { renderThumbnail } from './thumbnails.js';
 import { initForm } from './form.js';
