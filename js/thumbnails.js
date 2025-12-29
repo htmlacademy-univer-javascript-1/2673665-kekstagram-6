@@ -23,19 +23,24 @@ const createThumbnail = (pictureData) => {
 };
 
 const renderThumbnail = (picturesList, pictureContainer) => {
+    // Находим форму загрузки перед очисткой
     const uploadForm = pictureContainer.querySelector('.img-upload');
+
+    // Полностью очищаем контейнер
+    pictureContainer.innerHTML = '';
+
+    // Добавляем форму загрузки обратно
+    if (uploadForm) {
+        pictureContainer.appendChild(uploadForm);
+    }
+
+    // Создаем фрагмент для эффективного добавления
     const renderFragment = document.createDocumentFragment();
 
     picturesList.forEach((pictureItem) => {
         const thumbnail = createThumbnail(pictureItem);
         renderFragment.appendChild(thumbnail);
     });
-
-    pictureContainer.innerHTML = "";
-
-    if (uploadForm) {
-        pictureContainer.appendChild(uploadForm);
-    }
 
     pictureContainer.appendChild(renderFragment);
 };

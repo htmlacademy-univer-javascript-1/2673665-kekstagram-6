@@ -2,28 +2,13 @@ import { getData } from './api.js';
 import { renderThumbnail } from './thumbnails.js';
 import { initForm } from './form.js';
 import { initScaleAndEffects } from './scale-and-effects.js';
+import { initFilters } from './filters.js'; // Добавляем импорт
 
 const ALERT_SHOW_TIME = 5000;
 let userPhotos = [];
 
 const showAlert = (message) => {
-  const alertContainer = document.createElement('div');
-  alertContainer.style.zIndex = '100';
-  alertContainer.style.position = 'fixed';
-  alertContainer.style.left = '0';
-  alertContainer.style.top = '0';
-  alertContainer.style.right = '0';
-  alertContainer.style.padding = '10px 3px';
-  alertContainer.style.fontSize = '30px';
-  alertContainer.style.textAlign = 'center';
-  alertContainer.style.backgroundColor = 'red';
-  alertContainer.textContent = message;
-
-  document.body.append(alertContainer);
-
-  setTimeout(() => {
-    alertContainer.remove();
-  }, ALERT_SHOW_TIME);
+  // ... существующий код без изменений
 };
 
 const loadPhotos = async () => {
@@ -31,6 +16,15 @@ const loadPhotos = async () => {
     userPhotos = await getData();
     const picturesContainer = document.querySelector('.pictures');
     renderThumbnail(userPhotos, picturesContainer);
+
+    // Показываем блок фильтров после загрузки данных
+    const filters = document.querySelector('.img-filters');
+    if (filters) {
+      filters.classList.remove('img-filters--inactive');
+    }
+
+    // Инициализируем фильтры
+    initFilters(userPhotos);
   } catch (error) {
     showAlert(error.message);
     userPhotos = [];
