@@ -1,4 +1,3 @@
-'use strict';
 // ссылка на элемент полноразмерного просмотра
 const bigPicture = document.querySelector('.big-picture');
 //  элемент изображения внутри полноразмерного просмотра
