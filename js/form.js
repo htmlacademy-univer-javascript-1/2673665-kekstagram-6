@@ -48,7 +48,7 @@ const validateHashtags = (value) => {
   }
 
   const hashtags = value.trim().toLowerCase().split(/\s+/);
-  const hashtagRegex = /^#[a-zа-яё0-9]{1,19}$/i; // Разрешаем только буквы и цифры
+  const hashtagRegex = /^#[a-zа-яё0-9]{1,19}$/i;
 
   if (hashtags.length > 5) {
     return false;
@@ -98,7 +98,6 @@ const getHashtagErrorMessage = (value) => {
       if (tag.includes(' ')) {
         return 'Хэш-теги разделяются пробелами';
       }
-      // ДОБАВЛЯЕМ СООБЩЕНИЕ О СИМВОЛАХ ПУНКТУАЦИИ
       if (/[^\wа-яё#]/i.test(tag.replace('#', ''))) {
         return 'Хэш-тег не может содержать символы пунктуации (тире, дефис, запятая и т. п.)';
       }
@@ -131,26 +130,27 @@ export const initForm = () => {
     return;
   }
 
+  let imageUrl = null;
+
   const showUploadedImage = () => {
     const file = uploadInput.files[0];
     if (!file) {
       return;
     }
 
-    const reader = new FileReader();
 
-    reader.onload = (event) => {
-      previewImage.src = event.target.result;
+    if (imageUrl) {
+      URL.revokeObjectURL(imageUrl);
+    }
 
-      const effectPreviews = document.querySelectorAll('.effects__preview');
-      effectPreviews.forEach((preview) => {
-        preview.style.backgroundImage = `url(${event.target.result})`;
-      });
-    };
+    imageUrl = URL.createObjectURL(file);
+    previewImage.src = imageUrl;
 
-    reader.readAsDataURL(file);
+    const effectPreviews = document.querySelectorAll('.effects__preview');
+    effectPreviews.forEach((preview) => {
+      preview.style.backgroundImage = `url(${imageUrl})`;
+    });
   };
-
 
   const pristine = new Pristine(uploadForm, {
     classTo: 'img-upload__field-wrapper',
@@ -158,7 +158,7 @@ export const initForm = () => {
     successClass: 'img-upload__field-wrapper--valid',
     errorTextParent: 'img-upload__field-wrapper',
     errorTextTag: 'div',
-    errorTextClass: 'img-upload__error' // Возвращаем оригинальный класс
+    errorTextClass: 'img-upload__error'
   });
 
   const showUploadForm = () => {
@@ -182,6 +182,12 @@ export const initForm = () => {
       preview.style.backgroundImage = '';
     });
 
+    // Освобождаем память от blob URL
+    if (imageUrl) {
+      URL.revokeObjectURL(imageUrl);
+      imageUrl = null;
+    }
+
     uploadForm.dispatchEvent(new Event('reset'));
   };
 
@@ -200,23 +206,25 @@ export const initForm = () => {
     }
   });
 
-  // ВАЛИДАЦИЯ ХЭШТЕГОВ
   pristine.addValidator(
     hashtagInput,
     validateHashtags,
     getHashtagErrorMessage
   );
 
-  // ВАЛИДАЦИЯ КОММЕНТАРИЯ
   pristine.addValidator(
     commentInput,
     validateComment,
+    'Длина комментария не может составлять больше 140 символов'
   );
 
-  // Валидация при вводе для комментария
   commentInput.addEventListener('input', () => {
-    // Валидируем при каждом вводе
     pristine.validate(commentInput);
+  });
+
+  hashtagInput.addEventListener('focus', () => {
+    hashtagInput.removeAttribute('disabled');
+    hashtagInput.removeAttribute('aria-disabled');
   });
 
   uploadForm.addEventListener('submit', async (evt) => {
@@ -239,7 +247,9 @@ export const initForm = () => {
       closeUploadForm();
       showMessage('success');
     } catch {
-      showMessage('error');
+      showMessage('error', () => {
+        console.log('Error message closed, form remains open');
+      });
     } finally {
       submitButton.textContent = originalText;
       submitButton.disabled = false;
@@ -256,5 +266,9 @@ export const initForm = () => {
     if (evt.key === 'Escape') {
       evt.stopPropagation();
     }
+  });
+
+  hashtagInput.addEventListener('change', () => {
+    pristine.validate(hashtagInput);
   });
 };
