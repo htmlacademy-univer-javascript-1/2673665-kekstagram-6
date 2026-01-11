@@ -1,3 +1,4 @@
+'use strict';
 import { renderThumbnail } from './thumbnails.js';
 
 const RANDOM_PHOTOS_COUNT = 10;

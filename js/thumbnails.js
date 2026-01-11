@@ -1,3 +1,4 @@
+'use strict';
 import { openFullPhoto } from './full-photo.js';
 
 const createThumbnail = (pictureData) => {
