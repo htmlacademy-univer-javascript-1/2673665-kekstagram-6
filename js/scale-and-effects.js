@@ -1,5 +1,3 @@
-'use strict';
-
 const SCALE_STEP = 25;
 const SCALE_MIN = 25;
 const SCALE_MAX = 100;
@@ -66,12 +64,11 @@ export const initScaleAndEffects = () => {
   }
 
   let currentScale = SCALE_DEFAULT;
-  let currentEffect = 'none';
   let slider = null;
 
   const updateScale = (value) => {
     currentScale = value;
-    scaleValue.value = `${value}%`; // Это должно изменять значение поля
+    scaleValue.value = `${value}%`;
     previewImage.style.transform = `scale(${value / 100})`;
   };
 
@@ -90,7 +87,6 @@ export const initScaleAndEffects = () => {
   });
 
   const updateEffect = (effectName) => {
-    currentEffect = effectName;
     const effect = EFFECTS[effectName];
 
     if (effectName === 'none') {

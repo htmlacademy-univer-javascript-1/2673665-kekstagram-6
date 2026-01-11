@@ -1,4 +1,3 @@
-
 import { getRandomInteger } from './utils.js';
 import { MESSAGES, NAMES } from './data.js';
 
