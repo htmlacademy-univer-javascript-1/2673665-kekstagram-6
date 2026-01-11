@@ -1,3 +1,5 @@
+'use strict';
+
 const SCALE_STEP = 25;
 const SCALE_MIN = 25;
 const SCALE_MAX = 100;
@@ -69,7 +71,7 @@ export const initScaleAndEffects = () => {
 
   const updateScale = (value) => {
     currentScale = value;
-    scaleValue.value = `${value}%`;
+    scaleValue.value = `${value}%`; // Это должно изменять значение поля
     previewImage.style.transform = `scale(${value / 100})`;
   };
 
@@ -153,4 +155,3 @@ export const initScaleAndEffects = () => {
   resetScale();
   resetEffects();
 };
-

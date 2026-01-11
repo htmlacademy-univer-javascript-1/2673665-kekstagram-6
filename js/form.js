@@ -1,3 +1,5 @@
+'use strict';
+
 import { sendData } from './api.js';
 
 const SubmitButtonText = {
@@ -46,7 +48,7 @@ const validateHashtags = (value) => {
   }
 
   const hashtags = value.trim().toLowerCase().split(/\s+/);
-  const hashtagRegex = /^#[a-zа-яё0-9]{1,19}$/i;
+  const hashtagRegex = /^#[a-zа-яё0-9]{1,19}$/i; // Разрешаем только буквы и цифры
 
   if (hashtags.length > 5) {
     return false;
@@ -96,6 +98,10 @@ const getHashtagErrorMessage = (value) => {
       if (tag.includes(' ')) {
         return 'Хэш-теги разделяются пробелами';
       }
+      // ДОБАВЛЯЕМ СООБЩЕНИЕ О СИМВОЛАХ ПУНКТУАЦИИ
+      if (/[^\wа-яё#]/i.test(tag.replace('#', ''))) {
+        return 'Хэш-тег не может содержать символы пунктуации (тире, дефис, запятая и т. п.)';
+      }
       return 'Недопустимые символы в хэш-теге';
     }
 
@@ -118,11 +124,33 @@ export const initForm = () => {
   const uploadCancel = document.querySelector('#upload-cancel');
   const hashtagInput = document.querySelector('.text__hashtags');
   const commentInput = document.querySelector('.text__description');
-  const submitButton = uploadForm?.querySelector('.img-upload__submit');
+  const submitButton = uploadForm.querySelector('.img-upload__submit');
+  const previewImage = document.querySelector('.img-upload__preview img');
 
-  if (!uploadForm || !uploadInput || !uploadOverlay || !uploadCancel || !hashtagInput || !commentInput || !submitButton) {
+  if (!uploadForm || !uploadInput || !uploadOverlay || !uploadCancel || !hashtagInput || !commentInput || !submitButton || !previewImage) {
     return;
   }
+
+  const showUploadedImage = () => {
+    const file = uploadInput.files[0];
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      previewImage.src = event.target.result;
+
+      const effectPreviews = document.querySelectorAll('.effects__preview');
+      effectPreviews.forEach((preview) => {
+        preview.style.backgroundImage = `url(${event.target.result})`;
+      });
+    };
+
+    reader.readAsDataURL(file);
+  };
+
 
   const pristine = new Pristine(uploadForm, {
     classTo: 'img-upload__field-wrapper',
@@ -130,12 +158,14 @@ export const initForm = () => {
     successClass: 'img-upload__field-wrapper--valid',
     errorTextParent: 'img-upload__field-wrapper',
     errorTextTag: 'div',
-    errorTextClass: 'img-upload__error'
+    errorTextClass: 'img-upload__error' // Возвращаем оригинальный класс
   });
 
   const showUploadForm = () => {
     uploadOverlay.classList.remove('hidden');
     document.body.classList.add('modal-open');
+
+    showUploadedImage();
   };
 
   const closeUploadForm = () => {
@@ -145,11 +175,20 @@ export const initForm = () => {
     uploadInput.value = '';
     pristine.reset();
 
-    // Сбрасываем масштаб и эффекты через событие reset
+    previewImage.src = 'img/upload-default-image.jpg';
+
+    const effectPreviews = document.querySelectorAll('.effects__preview');
+    effectPreviews.forEach((preview) => {
+      preview.style.backgroundImage = '';
+    });
+
     uploadForm.dispatchEvent(new Event('reset'));
   };
 
-  uploadInput.addEventListener('change', showUploadForm);
+  uploadInput.addEventListener('change', () => {
+    showUploadForm();
+  });
+
   uploadCancel.addEventListener('click', closeUploadForm);
 
   document.addEventListener('keydown', (evt) => {
@@ -161,17 +200,24 @@ export const initForm = () => {
     }
   });
 
+  // ВАЛИДАЦИЯ ХЭШТЕГОВ
   pristine.addValidator(
     hashtagInput,
     validateHashtags,
     getHashtagErrorMessage
   );
 
+  // ВАЛИДАЦИЯ КОММЕНТАРИЯ
   pristine.addValidator(
     commentInput,
     validateComment,
-    'Комментарий не должен превышать 140 символов'
   );
+
+  // Валидация при вводе для комментария
+  commentInput.addEventListener('input', () => {
+    // Валидируем при каждом вводе
+    pristine.validate(commentInput);
+  });
 
   uploadForm.addEventListener('submit', async (evt) => {
     evt.preventDefault();
@@ -187,7 +233,7 @@ export const initForm = () => {
     submitButton.disabled = true;
 
     try {
-      const formData = new FormData(evt.target);
+      const formData = new FormData(uploadForm);
       await sendData(formData);
 
       closeUploadForm();
