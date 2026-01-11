@@ -12,7 +12,7 @@ const debounce = (callback, timeoutDelay = DEBOUNCE_DELAY) => {
   };
 };
 
-// Функции фильтраци
+// Функции фильтрации
 const getDefaultPhotos = (photos) => photos;
 
 const getRandomPhotos = (photos) => {
