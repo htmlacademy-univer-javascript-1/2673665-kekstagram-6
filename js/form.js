@@ -1,4 +1,3 @@
-'use strict';
 import { sendData } from './api.js';
 
 const SubmitButtonText = {
@@ -13,9 +12,13 @@ const showMessage = (templateId, onCloseCallback) => {
   }
 
   const message = template.content.querySelector(`.${templateId}`).cloneNode(true);
+
+  // eslint-disable-next-line no-use-before-define
   const closeMessage = () => {
     message.remove();
+    // eslint-disable-next-line no-use-before-define
     document.removeEventListener('keydown', onDocumentKeydown);
+    // eslint-disable-next-line no-use-before-define
     document.removeEventListener('click', onDocumentClick);
     if (onCloseCallback) {
       onCloseCallback();
@@ -23,11 +26,13 @@ const showMessage = (templateId, onCloseCallback) => {
   };
 
   const onCloseButtonClick = () => closeMessage();
+
   const onDocumentKeydown = (evt) => {
     if (evt.key === 'Escape') {
       closeMessage();
     }
   };
+
   const onDocumentClick = (evt) => {
     if (!message.contains(evt.target)) {
       closeMessage();
@@ -97,6 +102,9 @@ const getHashtagErrorMessage = (value) => {
       if (tag.includes(' ')) {
         return 'Хэш-теги разделяются пробелами';
       }
+      if (/[^\wа-яё#]/i.test(tag.replace('#', ''))) {
+        return 'Хэш-тег не может содержать символы пунктуации (тире, дефис, запятая и т. п.)';
+      }
       return 'Недопустимые символы в хэш-теге';
     }
 
@@ -108,9 +116,7 @@ const getHashtagErrorMessage = (value) => {
   return '';
 };
 
-const validateComment = (value) => {
-  return value.length <= 140;
-};
+const validateComment = (value) => value.length <= 140;
 
 export const initForm = () => {
   const uploadForm = document.querySelector('#upload-select-image');
@@ -126,22 +132,25 @@ export const initForm = () => {
     return;
   }
 
+  let imageUrl = null;
+
   const showUploadedImage = () => {
     const file = uploadInput.files[0];
-    if (file) {
-      const reader = new FileReader();
-
-      reader.onload = function (event) {
-        previewImage.src = event.target.result;
-
-        const effectPreviews = document.querySelectorAll('.effects__preview');
-        effectPreviews.forEach((preview) => {
-          preview.style.backgroundImage = `url(${event.target.result})`;
-        });
-      };
-
-      reader.readAsDataURL(file);
+    if (!file) {
+      return;
     }
+
+    if (imageUrl) {
+      URL.revokeObjectURL(imageUrl);
+    }
+
+    imageUrl = URL.createObjectURL(file);
+    previewImage.src = imageUrl;
+
+    const effectPreviews = document.querySelectorAll('.effects__preview');
+    effectPreviews.forEach((preview) => {
+      preview.style.backgroundImage = `url(${imageUrl})`;
+    });
   };
 
   const pristine = new Pristine(uploadForm, {
@@ -156,6 +165,7 @@ export const initForm = () => {
   const showUploadForm = () => {
     uploadOverlay.classList.remove('hidden');
     document.body.classList.add('modal-open');
+
     showUploadedImage();
   };
 
@@ -173,10 +183,19 @@ export const initForm = () => {
       preview.style.backgroundImage = '';
     });
 
+    // Освобождаем память от blob URL
+    if (imageUrl) {
+      URL.revokeObjectURL(imageUrl);
+      imageUrl = null;
+    }
+
     uploadForm.dispatchEvent(new Event('reset'));
   };
 
-  uploadInput.addEventListener('change', showUploadForm);
+  uploadInput.addEventListener('change', () => {
+    showUploadForm();
+  });
+
   uploadCancel.addEventListener('click', closeUploadForm);
 
   document.addEventListener('keydown', (evt) => {
@@ -197,8 +216,17 @@ export const initForm = () => {
   pristine.addValidator(
     commentInput,
     validateComment,
-    'Комментарий не должен превышать 140 символов'
+    'Длина комментария не может составлять больше 140 символов'
   );
+
+  commentInput.addEventListener('input', () => {
+    pristine.validate(commentInput);
+  });
+
+  hashtagInput.addEventListener('focus', () => {
+    hashtagInput.removeAttribute('disabled');
+    hashtagInput.removeAttribute('aria-disabled');
+  });
 
   uploadForm.addEventListener('submit', async (evt) => {
     evt.preventDefault();
@@ -219,8 +247,10 @@ export const initForm = () => {
 
       closeUploadForm();
       showMessage('success');
-    } catch {
-      showMessage('error');
+    } catch (error) {
+      showMessage('error', () => {
+        // Error message closed, form remains open
+      });
     } finally {
       submitButton.textContent = originalText;
       submitButton.disabled = false;
@@ -237,5 +267,9 @@ export const initForm = () => {
     if (evt.key === 'Escape') {
       evt.stopPropagation();
     }
+  });
+
+  hashtagInput.addEventListener('change', () => {
+    pristine.validate(hashtagInput);
   });
 };

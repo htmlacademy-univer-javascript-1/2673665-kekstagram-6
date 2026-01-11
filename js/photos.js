@@ -1,4 +1,3 @@
-'use strict';
 import { getRandomInteger } from './utils.js';
 import { DESCRIPTIONS } from './data.js';
 import { createComment } from './comments.js';
