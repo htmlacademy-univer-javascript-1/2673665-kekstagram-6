@@ -13,7 +13,6 @@ const showMessage = (templateId, onCloseCallback) => {
 
   const message = template.content.querySelector(`.${templateId}`).cloneNode(true);
 
-  // eslint-disable-next-line no-use-before-define
   const closeMessage = () => {
     message.remove();
     // eslint-disable-next-line no-use-before-define
